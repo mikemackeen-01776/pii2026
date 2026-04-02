@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pawleys Island Invitational 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  :root {
+    --navy: #1a2744;
+    --gold: #c8a84b;
+    --gold-light: #e8c96a;
+    --gold-dark: #9a7a2a;
+    --cream: #f5f0e8;
+    --green: #2d5a27;
+    --green-light: #4a7c3f;
+    --white: #ffffff;
+    --gray: #8a8a8a;
+    --red: #c0392b;
+    --shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--navy);
+    color: var(--cream);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1a35 0%, #1a2744 50%, #0d1a35 100%);
+    border-bottom: 3px solid var(--gold);
+    padding: 20px;
+    text-align: center;
+    position: relative;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8a84b' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .header-logo { width: 190px; height: 190px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(200,168,75,0.4)); }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  header p { color: #a0b0c8; font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
+
+  /* ── NAV ── */
+  nav {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 4px;
+    background: #0d1a35;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(200,168,75,0.3);
+    position: sticky; top: 0; z-index: 100;
+  }
+  nav button {
+    background: transparent;
+    border: 1px solid rgba(200,168,75,0.3);
+    color: #a0b0c8;
+    padding: 7px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  nav button:hover, nav button.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  /* ── MAIN CONTENT ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CARDS ── */
+  .card {
+    background: linear-gradient(145deg, #1e2f50, #162240);
+    border: 1px solid rgba(200,168,75,0.25);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(200,168,75,0.2);
+  }
+
+  /* ── SCOREBOARD ── */
+  .standings-table { width: 100%; border-collapse: collapse; }
+  .standings-table th {
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    color: var(--navy);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .standings-table th:first-child { border-radius: 6px 0 0 0; }
+  .standings-table th:last-child { border-radius: 0 6px 0 0; }
+  .standings-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(200,168,75,0.1);
+    font-size: 0.9rem;
+  }
+  .standings-table tr:last-child td { border-bottom: none; }
+  .standings-table tr:hover td { background: rgba(200,168,75,0.06); }
+  .rank-1 td:first-child { color: var(--gold); font-weight: 700; }
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-weight: 700; font-size: 0.85rem;
+  }
+  .rank-badge.gold { background: var(--gold); color: var(--navy); }
+  .rank-badge.silver { background: #aaa; color: #222; }
+  .rank-badge.bronze { background: #cd7f32; color: #fff; }
+  .rank-badge.other { background: rgba(255,255,255,0.1); color: #ccc; }
+  .pts-cell { font-weight: 700; color: var(--gold-light); font-size: 1.05rem; }
+  .money-cell { color: #7ecf7e; font-weight: 600; }
+
+  /* ── SCORE ENTRY ── */
+  .score-grid {
+    display: grid; grid-template-columns: repeat(9,1fr); gap: 6px;
+    margin-bottom: 16px;
+  }
+  .hole-cell { text-align: center; }
+  .hole-label {
+    background: var(--gold-dark);
+    color: var(--navy);
+    font-size: 0.7rem; font-weight: 700;
+    padding: 4px 2px;
+    border-radius: 4px 4px 0 0;
+    text-align: center;
+  }
+  .hole-par {
+    background: rgba(200,168,75,0.15);
+    color: var(--gold);
+    font-size: 0.7rem;
+    padding: 2px;
+    text-align: center;
+  }
+  .score-input {
+    width: 100%;
+    background: #0d1a35;
+    border: 1px solid rgba(200,168,75,0.3);
+    border-radius: 0 0 4px 4px;
+    color: var(--white);
+    font-size: 1rem; font-weight: 700;
+    text-align: center;
+    padding: 6px 2px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .score-input:focus { border-color: var(--gold); background: #162240; }
+  .score-input.birdie { color: #5bc8f5; }
+  .score-input.eagle { color: #f5a623; }
+  .score-input.bogey { color: #e07070; }
+  .score-input.double { color: #c0392b; }
+  .score-input.ace { color: #f5a623; background: rgba(245,166,35,0.15); }
+
+  .nine-label {
+    grid-column: 1/-1;
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(200,168,75,0.2);
+  }
+
+  /* ── SELECTS & BUTTONS ── */
+  select, .btn-select {
+    background: #0d1a35;
+    border: 1px solid rgba(200,168,75,0.4);
+    color: var(--cream);
+    padding: 9px 14px;
+    border-radius: 6px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    width: 100%;
+    margin-bottom: 12px;
+  }
+  select:focus { border-color: var(--gold); }
+  .btn {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: var(--navy);
+    border: none;
+    padding: 11px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(200,168,75,0.3);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(200,168,75,0.4); }
+  .btn:active { transform: translateY(0); }
+  .btn-danger { background: linear-gradient(135deg, #8b0000, var(--red)); color: #fff; }
+  .btn-ghost {
+    background: transparent; border: 1px solid rgba(200,168,75,0.4);
+    color: var(--gold); box-shadow: none;
+  }
+
+  /* ── SUMMARY BARS ── */
+  .score-summary {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .summary-chip {
+    background: rgba(200,168,75,0.12);
+    border: 1px solid rgba(200,168,75,0.3);
+    border-radius: 8px;
+    padding: 8px 16px;
+    text-align: center;
+  }
+  .summary-chip .lbl { font-size: 0.65rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray); }
+  .summary-chip .val { font-size: 1.4rem; font-weight: 700; color: var(--gold-light); }
+
+  /* ── ROUND TABS ── */
+  .round-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .round-tab {
+    padding: 8px 18px;
+    border-radius: 6px;
+    border: 1px solid rgba(200,168,75,0.3);
+    background: transparent;
+    color: #a0b0c8;
+    cursor: pointer;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .round-tab.active, .round-tab:hover {
+    background: var(--gold);
+    color: var(--navy);
+    font-weight: 700;
+    border-color: var(--gold);
+  }
+
+  /* ── FORMAT BADGE ── */
+  .format-badge {
+    display: inline-block;
+    background: rgba(200,168,75,0.15);
+    border: 1px solid var(--gold-dark);
+    color: var(--gold);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-left: 8px;
+  }
+
+  /* ── ALERT / TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--green);
+    border: 1px solid var(--green-light);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow);
+    z-index: 999;
+    animation: slideUp 0.3s ease;
+    display: none;
+  }
+  .toast.error { background: #8b0000; border-color: var(--red); }
+  .toast.show { display: block; }
+  @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+
+  /* ── COMMISSIONER PANEL ── */
+  .audit-row {
+    display: grid;
+    grid-template-columns: 120px 100px 80px 1fr;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(200,168,75,0.1);
+    font-size: 0.85rem;
+    align-items: center;
+  }
+  .audit-row:hover { background: rgba(200,168,75,0.04); }
+
+  /* ── SPECIAL EVENTS ── */
+  .special-events { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .special-btn {
+    background: transparent;
+    border: 1px solid rgba(200,168,75,0.3);
+    color: var(--cream);
+    padding: 7px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .special-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .special-btn.active { background: rgba(200,168,75,0.2); border-color: var(--gold); color: var(--gold-light); }
+
+  /* ── RESPONSIVE / MOBILE ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  @media (max-width: 600px) {
+    .header-logo { width: 120px; height: 120px; }
+    header { padding: 14px 12px; }
+    header h1 { font-size: 1.2rem; letter-spacing: 1px; }
+    header p { font-size: 0.7rem; }
+    nav {
+      justify-content: flex-start;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      gap: 6px;
+      padding: 8px 12px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav button {
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 8px 14px;
+      font-size: 0.75rem;
+    }
+    .card { padding: 16px 14px; }
+    main { padding: 14px 10px; }
+    .score-grid { grid-template-columns: repeat(9, 1fr); gap: 3px; }
+    .hole-label { font-size: 0.6rem; padding: 3px 1px; }
+    .hole-par   { font-size: 0.6rem; }
+    .score-input { font-size: 0.85rem; padding: 5px 1px; }
+    .score-summary { gap: 6px; }
+    .summary-chip { padding: 6px 10px; }
+    .summary-chip .lbl { font-size: 0.6rem; }
+    .summary-chip .val { font-size: 1rem; }
+    .standings-table { font-size: 0.78rem; }
+    .standings-table th, .standings-table td { padding: 7px 8px; }
+    #round-detail-content { overflow-x: auto; }
+    .special-btn { padding: 8px 12px; font-size: 0.75rem; }
+    .round-tabs {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+    }
+    .round-tabs::-webkit-scrollbar { display: none; }
+    .round-tab { white-space: nowrap; flex-shrink: 0; }
+    .rank-badge { width: 24px; height: 24px; font-size: 0.75rem; }
+    .format-badge { display: block; margin: 4px 0 0 0; font-size: 0.65rem; }
+    .nine-label { font-size: 0.75rem; }
+    .info-row { font-size: 0.82rem; }
+    .pin-input { width: 130px; }
+  }
+  @media (pointer: coarse) {
+    nav button, .round-tab, .special-btn, select, .btn { min-height: 44px; }
+    .score-input { min-height: 40px; }
+  }
+
+  .tag-green { color: #7ecf7e; font-weight: 700; }
+  .tag-red { color: #e07070; font-weight: 700; }
+  .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(200,168,75,0.1); font-size: 0.9rem; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .key { color: var(--gray); }
+
+  .ace-banner {
+    background: linear-gradient(135deg, #7a5c00, #c8a84b, #7a5c00);
+    border-radius: 8px; padding: 12px 20px;
+    text-align: center; margin-bottom: 16px;
+    font-family: 'Playfair Display', serif;
+    color: var(--navy); font-size: 1.1rem; font-weight: 700;
+    display: none;
+  }
+
+  .commissioner-lock {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .pin-input {
+    background: #0d1a35; border: 1px solid rgba(200,168,75,0.4);
+    color: var(--cream); padding: 9px 14px; border-radius: 6px;
+    font-size: 0.9rem; outline: none; width: 160px;
+    letter-spacing: 3px;
+  }
+  .locked-overlay {
+    text-align: center; padding: 60px 20px;
+  }
+  .locked-overlay .lock-icon { font-size: 4rem; margin-bottom: 16px; }
+  .locked-overlay p { color: var(--gray); margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay while Firebase connects -->
+<div id="loading-overlay" style="
+  position:fixed;inset:0;z-index:9999;
+  background:var(--navy);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+">
+  <img src="pii-2026-logo.png" style="width:120px;opacity:0.9;" onerror="this.style.display='none'">
+  <div style="color:var(--gold);font-family:'Playfair Display',serif;font-size:1.4rem;letter-spacing:2px;">Loading Tournament Data…</div>
+  <div style="display:flex;gap:8px;">
+    <div style="width:10px;height:10px;border-radius:50%;background:var(--gold);animation:pulse 1.2s ease-in-out infinite 0s;"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:var(--gold);animation:pulse 1.2s ease-in-out infinite 0.4s;"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:var(--gold);animation:pulse 1.2s ease-in-out infinite 0.8s;"></div>
+  </div>
+</div>
+<style>
+@keyframes pulse {
+  0%,100%{opacity:0.2;transform:scale(0.8);}
+  50%{opacity:1;transform:scale(1.2);}
+}
+</style>
+
+<header>
+  <img src="pii-2026-logo.png" alt="PII 2026 Logo" class="header-logo" onerror="this.style.display='none'">
+  <h1>Pawleys Island Invitational</h1>
+  <p>April 9–12, 2026 &nbsp;·&nbsp; South Carolina</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('home')">🏠 Home</button>
+  <button onclick="showSection('scoreboard')">🏆 Scoreboard</button>
+  <button onclick="showSection('enter')">✏️ Enter Scores</button>
+  <button onclick="showSection('rounds')">📋 Round Detail</button>
+  <button onclick="showSection('format')">📖 Format</button>
+  <button onclick="showSection('commissioner')">🔐 Commissioner</button>
+</nav>
+
+<main>
+
+<!-- ── HOME ── -->
+<div id="home" class="section active">
+  <div id="ace-banner" class="ace-banner">🎉 ACE! Someone made a hole-in-one! They win the entire pot! 🎉</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🏌️ Tournament Overview</div>
+      <div class="info-row"><span class="key">Dates</span><span>April 9–12, 2026</span></div>
+      <div class="info-row"><span class="key">Players</span><span id="home-player-count">8</span></div>
+      <div class="info-row"><span class="key">Prize Pool</span><span class="tag-green">$800</span></div>
+      <div class="info-row"><span class="key">Tournament Leader</span><span id="home-leader" class="tag-green">—</span></div>
+      <div class="info-row"><span class="key">Current Round</span><span id="home-round">Day 1 – The Tradition</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 Schedule</div>
+      <div class="info-row"><span class="key">Day 1 – Apr 9</span><span>The Tradition · Pinehurst</span></div>
+      <div class="info-row"><span class="key">Day 2 – Apr 10</span><span>Heritage · Yellow Ball</span></div>
+      <div class="info-row"><span class="key">Day 3 – Apr 11</span><span>True Blue · Sixes</span></div>
+      <div class="info-row"><span class="key">Day 4 – Apr 12</span><span>Caledonia · Stroke Play</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏆 Live Standings</div>
+    <table class="standings-table" id="home-standings"></table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💰 Prize Breakdown</div>
+    <div class="grid-2">
+      <div>
+        <div class="info-row"><span class="key">Day 1 Prize</span><span class="tag-green">$50</span></div>
+        <div class="info-row"><span class="key">Day 2 Prize</span><span class="tag-green">$100</span></div>
+        <div class="info-row"><span class="key">Day 3 Prize</span><span class="tag-green">$150</span></div>
+        <div class="info-row"><span class="key">Day 4 Prize</span><span class="tag-green">—</span></div>
+        <div class="info-row"><span class="key">Tournament Winner</span><span class="tag-green">$400</span></div>
+      </div>
+      <div>
+        <div class="info-row"><span class="key">Ace (entire pot!)</span><span class="tag-green">$800</span></div>
+        <div class="info-row"><span class="key">Barkie (tree → par)</span><span class="tag-green">$10</span></div>
+        <div class="info-row"><span class="key">Ferret (hole-out)</span><span class="tag-green">$5</span></div>
+        <div class="info-row"><span class="key">Sharkie (water → par)</span><span class="tag-green">$10</span></div>
+        <div class="info-row"><span class="key">Anyone Pool</span><span class="tag-green">$100</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCOREBOARD ── -->
+<div id="scoreboard" class="section">
+  <div class="card">
+    <div class="card-title">🏆 Tournament Standings</div>
+    <table class="standings-table" id="full-standings"></table>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📊 Round Points</div>
+      <table class="standings-table" id="round-points-table"></table>
+    </div>
+    <div class="card">
+      <div class="card-title">💰 Special Events</div>
+      <table class="standings-table" id="specials-table"></table>
+    </div>
+  </div>
+</div>
+
+<!-- ── ENTER SCORES ── -->
+<div id="enter" class="section">
+  <div class="card">
+    <div class="card-title">✏️ Score Entry</div>
+    <div class="grid-2">
+      <div>
+        <label style="font-size:0.75rem;color:var(--gray);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px;">Select Player</label>
+        <select id="entry-player" onchange="updateEntryForm()"></select>
+      </div>
+      <div>
+        <label style="font-size:0.75rem;color:var(--gray);letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px;">Select Round</label>
+        <select id="entry-round" onchange="updateEntryForm()"></select>
+      </div>
+    </div>
+    <div id="entry-info" style="margin-bottom:16px;"></div>
+    <div id="entry-scorecard"></div>
+
+    <div class="score-summary" id="entry-summary"></div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.75rem;color:var(--gray);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Special Events This Round</div>
+      <div class="special-events">
+        <button class="special-btn" id="btn-ace" onclick="toggleSpecial('ace')">🎯 Ace</button>
+        <button class="special-btn" id="btn-barkie" onclick="toggleSpecial('barkie')">🌳 Barkie (+$10)</button>
+        <button class="special-btn" id="btn-ferret" onclick="toggleSpecial('ferret')">🕳️ Ferret (+$5)</button>
+        <button class="special-btn" id="btn-sharkie" onclick="toggleSpecial('sharkie')">🦈 Sharkie (+$10)</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn" onclick="saveScores()">💾 Save Scores</button>
+      <button class="btn btn-ghost" onclick="clearEntry()">✕ Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ROUND DETAIL ── -->
+<div id="rounds" class="section">
+  <div class="round-tabs" id="round-tabs"></div>
+  <div id="round-detail-content"></div>
+</div>
+
+<!-- ── FORMAT ── -->
+<div id="format" class="section">
+  <div class="card">
+    <div class="card-title">📖 Tournament Format</div>
+    <div style="line-height:1.8;font-size:0.9rem;color:var(--cream);">
+      <h3 style="color:var(--gold);font-family:'Playfair Display',serif;margin:16px 0 8px;">Day 1 – The Tradition · Pinehurst ($50)</h3>
+      <p>Two-man teams (A+D player pairing). Modified alternate shot — both players drive, hit each other's drives, then alternate from the best ball. On Par 3s: each player drives, then alternate from there. The player whose ball is NOT selected hits next.</p>
+      <p style="margin-top:8px;"><strong style="color:var(--gold);">Points:</strong> 1st: 8pts + $25 each · 2nd: 6pts · 3rd: 4pts · 4th: 2pts per player</p>
+
+      <h3 style="color:var(--gold);font-family:'Playfair Display',serif;margin:16px 0 8px;">Day 2 – Heritage · Yellow Ball ($100)</h3>
+      <p>Two foursomes. The highest handicap player starts with the yellow ball, which rotates every hole from highest to lowest handicap. Each hole score = yellow ball player's gross score + lowest individual net score of other players. Each team gets 3 yellow balls — 2 strokes off for each ball returned at the end.</p>
+      <p style="margin-top:8px;"><strong style="color:var(--gold);">Points:</strong> Winning foursome: 8pts + $25 each · Losing foursome: 4pts each</p>
+
+      <h3 style="color:var(--gold);font-family:'Playfair Display',serif;margin:16px 0 8px;">Day 3 – True Blue · Sixes Match Play ($150)</h3>
+      <p>Match play within each foursome with teams switching every six holes. Net score. Each player earns 3pts per six-hole match won. A push earns 1pt per player. Top point earners split $150 (9pts wins all; if two players tie at 9, they split).</p>
+
+      <h3 style="color:var(--gold);font-family:'Playfair Display',serif;margin:16px 0 8px;">Day 4 – Caledonia · Stroke Play</h3>
+      <p>Net best score. Top 4 players by overall points play together. 8pts to the winner, cascading to 1pt for last place. Player with the most total points wins the 2026 PII Championship and $400.</p>
+
+      <h3 style="color:var(--gold);font-family:'Playfair Display',serif;margin:16px 0 8px;">⚡ Special Events</h3>
+      <ul style="padding-left:20px;">
+        <li><strong>Ace</strong> — Wins the ENTIRE pot ($800). Ace also buys dinner at Frank's.</li>
+        <li><strong>Barkie</strong> — Par or better after hitting a tree: $10</li>
+        <li><strong>Ferret</strong> — Holing out from off the green for par or better: $5</li>
+        <li><strong>Sharkie</strong> — Par or better after going in the water: $10</li>
+        <li><strong>Anyone Pool</strong> — $100 pool, pays out until spent</li>
+      </ul>
+
+      <h3 style="color:var(--gold);font-family:'Playfair Display',serif;margin:16px 0 8px;">Commissioner's Mandate</h3>
+      <p>The Commissioner may issue a mandate to any player at any time. Refusal results in forfeiture of all points and winnings.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👥 Pairings</div>
+    <div id="pairings-display"></div>
+  </div>
+</div>
+
+<!-- ── COMMISSIONER ── -->
+<div id="commissioner" class="section">
+  <div class="card">
+    <div class="card-title">🔐 Commissioner Access</div>
+    <div id="commissioner-locked">
+      <div class="locked-overlay">
+        <div class="lock-icon">🔒</div>
+        <p>Enter the Commissioner PIN to access audit tools and override controls.</p>
+        <div class="commissioner-lock">
+          <input type="password" id="pin-input" class="pin-input" placeholder="PIN" maxlength="6" onkeydown="if(event.key==='Enter')checkPin()">
+          <button class="btn" onclick="checkPin()">Unlock</button>
+        </div>
+      </div>
+    </div>
+    <div id="commissioner-panel" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+        <div style="color:var(--green);font-weight:700;">✅ Commissioner Mode Active</div>
+        <button class="btn btn-danger" onclick="lockCommissioner()">🔒 Lock</button>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div>
+          <div style="font-size:0.75rem;color:var(--gray);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Edit Player Scores</div>
+          <select id="comm-player" style="background:#0d1a35;border:1px solid rgba(200,168,75,0.4);color:var(--cream);padding:9px 14px;border-radius:6px;width:100%;margin-bottom:8px;" onchange="loadCommissionerView()"></select>
+          <select id="comm-round" style="background:#0d1a35;border:1px solid rgba(200,168,75,0.4);color:var(--cream);padding:9px 14px;border-radius:6px;width:100%;margin-bottom:8px;" onchange="loadCommissionerView()"></select>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;color:var(--gray);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Override Points</div>
+          <select id="comm-override-player" style="background:#0d1a35;border:1px solid rgba(200,168,75,0.4);color:var(--cream);padding:9px 14px;border-radius:6px;width:100%;margin-bottom:8px;"></select>
+          <input type="number" id="comm-override-pts" placeholder="Points to add/remove" style="background:#0d1a35;border:1px solid rgba(200,168,75,0.4);color:var(--cream);padding:9px 14px;border-radius:6px;width:100%;margin-bottom:8px;">
+          <input type="text" id="comm-override-reason" placeholder="Reason (Commissioner Mandate, etc.)" style="background:#0d1a35;border:1px solid rgba(200,168,75,0.4);color:var(--cream);padding:9px 14px;border-radius:6px;width:100%;margin-bottom:8px;">
+          <button class="btn" onclick="applyOverride()">Apply Override</button>
+        </div>
+      </div>
+
+      <div class="card-title">📋 Score Audit Log</div>
+      <div id="comm-audit-log" style="max-height:400px;overflow-y:auto;"></div>
+
+      <div class="card-title" style="margin-top:20px;">🔄 Reset / Admin</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <button class="btn btn-ghost" onclick="exportData()">📥 Export Data JSON</button>
+        <button class="btn btn-danger" onclick="resetAllScores()">⚠️ Reset All Scores</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════
+const PLAYERS = [
+  {id:'Player1', first:'Mike', last:'MacKeen', hcp:20.3},
+  {id:'Player2', first:'Tim "Boom Boom"', last:'Murphy', hcp:20.3},
+  {id:'Player3', first:'John', last:'Kawola', hcp:9.1},
+  {id:'Player4', first:'Brian', last:'Casey', hcp:15.4},
+  {id:'Player5', first:'George', last:'Mandt', hcp:18.0},
+  {id:'Player6', first:'Hilary', last:'Rodham Simons', hcp:16.8},
+  {id:'Player7', first:'Fr. Joseph', last:'Driscoll', hcp:23.0},
+  {id:'Player8', first:'John "Rory"', last:'Cahill', hcp:20.0},
+];
+
+const ROUNDS = [
+  {id:'R1', course:'Course1', courseName:'The Tradition', date:'April 9', format:'Pinehurst'},
+  {id:'R2', course:'Course2', courseName:'Heritage', date:'April 10', format:'Yellow Ball'},
+  {id:'R3', course:'Course3', courseName:'True Blue', date:'April 11', format:'Sixes'},
+  {id:'R4', course:'Course4', courseName:'Caledonia Golf & Fish', date:'April 12', format:'Stroke Play'},
+];
+
+const COURSES = {
+  Course1: 'The Tradition',
+  Course2: 'Heritage',
+  Course3: 'True Blue',
+  Course4: 'Caledonia Golf & Fish',
+};
+
+// Holes: {courseId: [{hole, par, si}]}
+const HOLES = {};
+const rawHoles = [
+  ['Course1',1,4,17],['Course1',2,3,15],['Course1',3,4,11],['Course1',4,5,5],
+  ['Course1',5,3,13],['Course1',6,4,9],['Course1',7,4,3],['Course1',8,4,1],
+  ['Course1',9,5,7],['Course1',10,5,6],['Course1',11,4,2],['Course1',12,3,18],
+  ['Course1',13,4,10],['Course1',14,5,14],['Course1',15,3,16],['Course1',16,4,4],
+  ['Course1',17,4,12],['Course1',18,4,8],
+  ['Course2',1,4,4],['Course2',2,5,8],['Course2',3,4,10],['Course2',4,4,2],
+  ['Course2',5,4,12],['Course2',6,3,14],['Course2',7,4,6],['Course2',8,3,18],
+  ['Course2',9,4,16],['Course2',10,5,11],['Course2',11,3,17],['Course2',12,4,13],
+  ['Course2',13,3,9],['Course2',14,4,1],['Course2',15,4,5],['Course2',16,4,7],
+  ['Course2',17,4,3],['Course2',18,5,15],
+  ['Course3',1,5,1],['Course3',2,4,11],['Course3',3,3,15],['Course3',4,5,5],
+  ['Course3',5,4,13],['Course3',6,4,9],['Course3',7,3,17],['Course3',8,4,7],
+  ['Course3',9,5,3],['Course3',10,5,8],['Course3',11,3,18],['Course3',12,4,10],
+  ['Course3',13,4,14],['Course3',14,3,16],['Course3',15,5,4],['Course3',16,3,12],
+  ['Course3',17,4,2],['Course3',18,4,6],
+  ['Course4',1,4,12],['Course4',2,5,8],['Course4',3,3,14],['Course4',4,4,6],
+  ['Course4',5,4,2],['Course4',6,3,16],['Course4',7,4,4],['Course4',8,5,10],
+  ['Course4',9,3,18],['Course4',10,5,15],['Course4',11,3,13],['Course4',12,4,9],
+  ['Course4',13,4,5],['Course4',14,4,7],['Course4',15,4,3],['Course4',16,4,1],
+  ['Course4',17,3,17],['Course4',18,4,11],
+];
+rawHoles.forEach(([c,h,p,si])=>{
+  if(!HOLES[c]) HOLES[c]=[];
+  HOLES[c].push({hole:h, par:p, si});
+});
+
+// Groups & pairings
+const GROUPS = {
+  R1: [{id:'G11',players:['Player3','Player7']},{id:'G12',players:['Player4','Player1']},{id:'G13',players:['Player2','Player6']},{id:'G14',players:['Player5','Player8']}],
+  R2: [{id:'G21',players:['Player8','Player7','Player4','Player6']},{id:'G22',players:['Player5','Player1','Player3','Player2']}],
+  R3: 'sixes',
+  R4: [{id:'G41',players:['Player1','Player2','Player3','Player4','Player5','Player6','Player7','Player8']}],
+};
+
+// Day 3 sixes pairings (group_id → players)
+const SIXES_GROUPS = {
+  S111:['Player3','Player8'], S112:['Player2','Player6'],
+  S121:['Player3','Player6'], S122:['Player2','Player8'],
+  S131:['Player2','Player3'], S132:['Player6','Player8'],
+  S211:['Player4','Player7'], S212:['Player1','Player5'],
+  S221:['Player1','Player7'], S222:['Player4','Player5'],
+  S231:['Player1','Player4'], S232:['Player5','Player7'],
+};
+
+// Player → round → groups for sixes
+const SIXES_PLAYER_GROUPS = {
+  Player1: {holes_1_6:'S212', holes_7_12:'S221', holes_13_18:'S231'},
+  Player2: {holes_1_6:'S112', holes_7_12:'S122', holes_13_18:'S131'},
+  Player3: {holes_1_6:'S111', holes_7_12:'S121', holes_13_18:'S131'},
+  Player4: {holes_1_6:'S211', holes_7_12:'S222', holes_13_18:'S231'},
+  Player5: {holes_1_6:'S212', holes_7_12:'S222', holes_13_18:'S232'},
+  Player6: {holes_1_6:'S112', holes_7_12:'S121', holes_13_18:'S132'},
+  Player7: {holes_1_6:'S211', holes_7_12:'S221', holes_13_18:'S232'},
+  Player8: {holes_1_6:'S111', holes_7_12:'S122', holes_13_18:'S132'},
+};
+
+const COMMISSIONER_PIN = '4114';
+
+// ═══════════════════════════════════════════════════════
+//  FIREBASE SETUP
+// ═══════════════════════════════════════════════════════
+const firebaseConfig = {
+  databaseURL: "https://pii2026-default-rtdb.firebaseio.com/"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const stateRef = db.ref('pii2026/state');
+
+function initState() {
+  return {
+    scores: {},
+    pointsOverride: {},
+    specials: {},
+    auditLog: [],
+    commUnlocked: false,
+  };
+}
+
+let STATE = initState();
+let currentEntryPlayer = PLAYERS[0].id;
+let currentEntryRound = ROUNDS[0].id;
+let entrySpecials = {};
+let firebaseReady = false;
+
+// Save entire STATE to Firebase
+function saveState() {
+  stateRef.set(STATE).catch(err => {
+    console.error('Firebase save error:', err);
+    toast('⚠️ Save failed – check connection', true);
+  });
+}
+
+// Listen for real-time changes from Firebase and re-render
+function startFirebaseListener() {
+  stateRef.on('value', snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      STATE = data;
+      // Ensure nested objects exist
+      STATE.scores        = STATE.scores        || {};
+      STATE.pointsOverride= STATE.pointsOverride|| {};
+      STATE.specials      = STATE.specials      || {};
+      STATE.auditLog      = STATE.auditLog      || [];
+    } else {
+      STATE = initState();
+    }
+
+    // Re-render whatever section is currently active
+    const activeSection = document.querySelector('.section.active');
+    if (activeSection) {
+      const id = activeSection.id;
+      if (id === 'home')        renderHome();
+      if (id === 'scoreboard')  renderScoreboard();
+      if (id === 'rounds')      { const activeTab = document.querySelector('.round-tab.active'); if(activeTab) activeTab.click(); }
+      if (id === 'enter')       renderEntryScorecard();
+    }
+
+    if (!firebaseReady) {
+      firebaseReady = true;
+      document.getElementById('loading-overlay').style.display = 'none';
+      initEntryForm();
+      renderHome();
+    }
+  }, err => {
+    console.error('Firebase read error:', err);
+    document.getElementById('loading-overlay').innerHTML =
+      '<div style="text-align:center;padding:40px;"><div style="font-size:2rem;margin-bottom:16px;">⚠️</div><div style="color:#e07070;">Could not connect to database.<br>Check your internet connection and refresh.</div></div>';
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════
+function playerName(id) {
+  const p = PLAYERS.find(x=>x.id===id);
+  return p ? `${p.first} ${p.last}` : id;
+}
+function playerHcp(id) {
+  const p = PLAYERS.find(x=>x.id===id);
+  return p ? p.hcp : 0;
+}
+function getScore(playerId, roundId, hole) {
+  return STATE.scores[`${playerId}_${roundId}_${hole}`];
+}
+function setScore(playerId, roundId, hole, val) {
+  const key = `${playerId}_${roundId}_${hole}`;
+  if(val==='' || val===null || val===undefined) { delete STATE.scores[key]; }
+  else STATE.scores[key] = parseInt(val);
+}
+function getHcp(playerId, courseId) {
+  // Course handicap = index * (slope/113). Using index directly (simplified).
+  return Math.round(playerHcp(playerId));
+}
+function netScore(gross, playerId, courseId, hole_si) {
+  const hcp = getHcp(playerId, courseId);
+  // strokes received on this hole
+  const strokes = hcp >= hole_si ? 1 : 0;
+  return gross - strokes;
+}
+
+// ═══════════════════════════════════════════════════════
+//  POINTS CALCULATION
+// ═══════════════════════════════════════════════════════
+function calcAllPoints() {
+  const pts = {};
+  const money = {};
+  PLAYERS.forEach(p=>{ pts[p.id]=0; money[p.id]=0; });
+
+  // Day 1: Pinehurst – 4 two-man teams, score = team score, top team 8pts/$50
+  const r1pts = calcR1Points();
+  r1pts.forEach(({playerId, points, prize})=>{
+    pts[playerId] = (pts[playerId]||0) + points;
+    money[playerId] = (money[playerId]||0) + prize;
+  });
+
+  // Day 2: Yellow Ball – 2 foursomes
+  const r2pts = calcR2Points();
+  r2pts.forEach(({playerId, points, prize})=>{
+    pts[playerId] = (pts[playerId]||0) + points;
+    money[playerId] = (money[playerId]||0) + prize;
+  });
+
+  // Day 3: Sixes
+  const r3pts = calcR3Points();
+  r3pts.forEach(({playerId, points, prize})=>{
+    pts[playerId] = (pts[playerId]||0) + points;
+    money[playerId] = (money[playerId]||0) + prize;
+  });
+
+  // Day 4: Stroke Play
+  const r4pts = calcR4Points();
+  r4pts.forEach(({playerId, points, prize})=>{
+    pts[playerId] = (pts[playerId]||0) + points;
+    money[playerId] = (money[playerId]||0) + prize;
+  });
+
+  // Specials
+  PLAYERS.forEach(p=>{
+    ROUNDS.forEach(r=>{
+      const s = STATE.specials[`${p.id}_${r.id}`] || {};
+      if(s.ace) money[p.id] = (money[p.id]||0); // Ace handled separately
+      if(s.barkie) money[p.id] = (money[p.id]||0) + 10;
+      if(s.ferret) money[p.id] = (money[p.id]||0) + 5;
+      if(s.sharkie) money[p.id] = (money[p.id]||0) + 10;
+    });
+  });
+
+  // Overrides
+  PLAYERS.forEach(p=>{
+    const overrides = STATE.pointsOverride[p.id] || [];
+    overrides.forEach(o=>{ pts[p.id] = (pts[p.id]||0) + o.delta; });
+  });
+
+  return {pts, money};
+}
+
+function getTeamScoreR1(groupId) {
+  // Pinehurst: team score = sum of team hole scores (we record per player; team = group)
+  // We track team scores in the entry for R1 as Player1's scores = team score
+  // Use both players' gross to compute team score per hole
+  const group = GROUPS.R1.find(g=>g.id===groupId);
+  if(!group) return null;
+  const [p1, p2] = group.players;
+  const holes = HOLES['Course1'];
+  let total = 0; let holesPlayed = 0;
+  holes.forEach(h=>{
+    const s1 = getScore(p1,'R1',h.hole);
+    const s2 = getScore(p2,'R1',h.hole);
+    // Use whichever is entered as the team score (they share a team card)
+    const teamScore = s1 || s2;
+    if(teamScore) { total += teamScore; holesPlayed++; }
+  });
+  return holesPlayed===18 ? total : null;
+}
+
+function calcR1Points() {
+  const results = [];
+  const teamScores = GROUPS.R1.map(g=>{
+    return {group: g, score: getTeamScoreR1(g.id), players: g.players};
+  }).filter(t=>t.score!==null);
+
+  if(teamScores.length === 0) return results;
+  teamScores.sort((a,b)=>a.score-b.score); // lower is better
+
+  const pointMap = [8,6,4,2];
+  const prizeMap = [50,0,0,0]; // $50 to winner each, others 0
+  teamScores.forEach((t,i)=>{
+    t.players.forEach(pid=>{
+      results.push({playerId:pid, points:pointMap[i]||0, prize:prizeMap[i]||0});
+    });
+  });
+  return results;
+}
+
+function calcTeamScoreR2(groupId) {
+  // Yellow Ball: complex – simplified as sum net scores
+  const group = GROUPS.R2.find(g=>g.id===groupId);
+  if(!group) return null;
+  const players = group.players;
+  const holes = HOLES['Course2'];
+  // Determine yellow ball holder per hole (rotate by handicap order)
+  const sorted = [...players].sort((a,b)=>playerHcp(b)-playerHcp(a)); // highest hcp first
+  let total = 0; let holesPlayed = 0;
+  holes.forEach((h,i)=>{
+    const yellowHolder = sorted[i % sorted.length];
+    const yellowGross = getScore(yellowHolder,'R2',h.hole);
+    if(!yellowGross) return;
+    // Lowest net of other players
+    const others = players.filter(p=>p!==yellowHolder);
+    const otherNets = others.map(p=>{
+      const g = getScore(p,'R2',h.hole);
+      if(!g) return Infinity;
+      return netScore(g, p, 'Course2', h.si);
+    }).filter(n=>n!==Infinity);
+    if(otherNets.length===0) return;
+    const bestNet = Math.min(...otherNets);
+    total += yellowGross + bestNet;
+    holesPlayed++;
+  });
+  if(holesPlayed < 18) return null;
+  // Apply yellow ball bonus: 2 strokes off per ball returned (assume 3 balls available = 6 strokes bonus)
+  total -= 6;
+  return total;
+}
+
+function calcR2Points() {
+  const results = [];
+  const teamScores = GROUPS.R2.map(g=>{
+    return {group:g, score:calcTeamScoreR2(g.id), players:g.players};
+  }).filter(t=>t.score!==null);
+  if(teamScores.length < 2) return results;
+  teamScores.sort((a,b)=>a.score-b.score);
+  const pts = [8,4];
+  const prizes = [25,0];
+  teamScores.forEach((t,i)=>{
+    t.players.forEach(pid=>{
+      results.push({playerId:pid, points:pts[i]||0, prize:prizes[i]||0});
+    });
+  });
+  return results;
+}
+
+function calcR3Points() {
+  // Sixes: 3 six-hole matches. 3pts win, 1pt push, 0pt loss per match. Top gets $150.
+  const results = {};
+  PLAYERS.forEach(p=>{ results[p.id]={playerId:p.id,points:0,prize:0}; });
+
+  const sixes = ['holes_1_6','holes_7_12','holes_13_18'];
+  const holeRanges = [[1,6],[7,12],[13,18]];
+
+  PLAYERS.forEach(p=>{
+    sixes.forEach((sixKey,si)=>{
+      const groupId = SIXES_PLAYER_GROUPS[p.id][sixKey];
+      const opponent = SIXES_GROUPS[groupId]?.find(x=>x!==p.id);
+      if(!opponent) return;
+      const [hStart, hEnd] = holeRanges[si];
+      const holes = HOLES['Course3'].filter(h=>h.hole>=hStart && h.hole<=hEnd);
+      let pNet=0, oNet=0, complete=true;
+      holes.forEach(h=>{
+        const pg = getScore(p.id,'R3',h.hole);
+        const og = getScore(opponent,'R3',h.hole);
+        if(!pg||!og){complete=false;return;}
+        pNet += netScore(pg,p.id,'Course3',h.si);
+        oNet += netScore(og,opponent,'Course3',h.si);
+      });
+      if(!complete) return;
+      if(pNet < oNet) results[p.id].points += 3;
+      else if(pNet === oNet) results[p.id].points += 1;
+    });
+  });
+
+  // Distribute $150 to top earner(s) in R3
+  const maxPts = Math.max(...Object.values(results).map(r=>r.points));
+  if(maxPts > 0) {
+    const winners = Object.values(results).filter(r=>r.points===maxPts);
+    const share = Math.floor(150/winners.length);
+    winners.forEach(w=>{ w.prize += share; });
+  }
+  return Object.values(results);
+}
+
+function calcR4Points() {
+  // Stroke play net score. 8,7,6,5,4,3,2,1 pts.
+  const netTotals = PLAYERS.map(p=>{
+    const holes = HOLES['Course4'];
+    let total=0; let complete=true;
+    holes.forEach(h=>{
+      const g = getScore(p.id,'R4',h.hole);
+      if(!g){complete=false;return;}
+      total += netScore(g, p.id,'Course4',h.si);
+    });
+    return {playerId:p.id, net:complete?total:null};
+  }).filter(x=>x.net!==null);
+
+  netTotals.sort((a,b)=>a.net-b.net);
+  const ptsMap = [8,7,6,5,4,3,2,1];
+  return netTotals.map((t,i)=>({playerId:t.playerId, points:ptsMap[i]||0, prize:0}));
+}
+
+function hasAce() {
+  return PLAYERS.some(p=>ROUNDS.some(r=>STATE.specials[`${p.id}_${r.id}`]?.ace));
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const navBtns = document.querySelectorAll('nav button');
+  const idx = ['home','scoreboard','enter','rounds','format','commissioner'].indexOf(id);
+  if(idx>=0) navBtns[idx].classList.add('active');
+
+  if(id==='home') renderHome();
+  if(id==='scoreboard') renderScoreboard();
+  if(id==='rounds') renderRounds();
+  if(id==='format') renderPairings();
+  if(id==='commissioner') renderCommissioner();
+}
+
+function toast(msg, isError=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isError?' error':'');
+  setTimeout(()=>el.className='toast', 3000);
+}
+
+function rankBadge(rank) {
+  if(rank===1) return `<span class="rank-badge gold">1</span>`;
+  if(rank===2) return `<span class="rank-badge silver">2</span>`;
+  if(rank===3) return `<span class="rank-badge bronze">3</span>`;
+  return `<span class="rank-badge other">${rank}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER HOME
+// ═══════════════════════════════════════════════════════
+function renderHome() {
+  const {pts} = calcAllPoints();
+  const sorted = [...PLAYERS].sort((a,b)=>(pts[b.id]||0)-(pts[a.id]||0));
+
+  if(hasAce()) document.getElementById('ace-banner').style.display='block';
+
+  const leader = sorted[0];
+  document.getElementById('home-leader').textContent = leader ? `${leader.first} ${leader.last} (${pts[leader.id]}pts)` : '—';
+
+  const tbody = sorted.map((p,i)=>`
+    <tr>
+      <td>${rankBadge(i+1)}</td>
+      <td>${p.first} ${p.last}</td>
+      <td>Hcp ${p.hcp}</td>
+      <td class="pts-cell">${pts[p.id]||0} pts</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('home-standings').innerHTML = `
+    <thead><tr><th>#</th><th>Player</th><th>Handicap</th><th>Points</th></tr></thead>
+    <tbody>${tbody}</tbody>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER SCOREBOARD
+// ═══════════════════════════════════════════════════════
+function renderScoreboard() {
+  const {pts, money} = calcAllPoints();
+  const r1 = calcR1Points(); const r2 = calcR2Points();
+  const r3 = calcR3Points(); const r4 = calcR4Points();
+
+  const ptsByRound = {};
+  PLAYERS.forEach(p=>{ ptsByRound[p.id]={R1:0,R2:0,R3:0,R4:0}; });
+  r1.forEach(x=>{ ptsByRound[x.playerId].R1=x.points; });
+  r2.forEach(x=>{ ptsByRound[x.playerId].R2=x.points; });
+  r3.forEach(x=>{ ptsByRound[x.playerId].R3=x.points; });
+  r4.forEach(x=>{ ptsByRound[x.playerId].R4=x.points; });
+
+  const sorted = [...PLAYERS].sort((a,b)=>(pts[b.id]||0)-(pts[a.id]||0));
+
+  // Full standings
+  const rows = sorted.map((p,i)=>`
+    <tr>
+      <td>${rankBadge(i+1)}</td>
+      <td>${p.first} ${p.last}</td>
+      <td style="color:#a0b0c8;font-size:0.8rem;">${p.hcp}</td>
+      <td>${ptsByRound[p.id].R1||0}</td>
+      <td>${ptsByRound[p.id].R2||0}</td>
+      <td>${ptsByRound[p.id].R3||0}</td>
+      <td>${ptsByRound[p.id].R4||0}</td>
+      <td class="pts-cell">${pts[p.id]||0}</td>
+      <td class="money-cell">$${money[p.id]||0}</td>
+    </tr>
+  `).join('');
+  document.getElementById('full-standings').innerHTML = `
+    <thead><tr><th>#</th><th>Player</th><th>Hcp</th><th>D1</th><th>D2</th><th>D3</th><th>D4</th><th>Total</th><th>Money</th></tr></thead>
+    <tbody>${rows}</tbody>
+  `;
+
+  // Round points
+  document.getElementById('round-points-table').innerHTML = `
+    <thead><tr><th>Player</th><th>D1</th><th>D2</th><th>D3</th><th>D4</th></tr></thead>
+    <tbody>${PLAYERS.map(p=>`<tr>
+      <td>${p.first} ${p.last}</td>
+      <td>${ptsByRound[p.id].R1||0}</td>
+      <td>${ptsByRound[p.id].R2||0}</td>
+      <td>${ptsByRound[p.id].R3||0}</td>
+      <td>${ptsByRound[p.id].R4||0}</td>
+    </tr>`).join('')}</tbody>
+  `;
+
+  // Specials
+  const specRows = PLAYERS.map(p=>{
+    const events = [];
+    ROUNDS.forEach(r=>{
+      const s = STATE.specials[`${p.id}_${r.id}`]||{};
+      if(s.ace) events.push('🎯 Ace');
+      if(s.barkie) events.push('🌳 Barkie');
+      if(s.ferret) events.push('🕳️ Ferret');
+      if(s.sharkie) events.push('🦈 Sharkie');
+    });
+    return `<tr><td>${p.first} ${p.last}</td><td>${events.join(', ')||'—'}</td></tr>`;
+  }).join('');
+  document.getElementById('specials-table').innerHTML = `
+    <thead><tr><th>Player</th><th>Events</th></tr></thead>
+    <tbody>${specRows}</tbody>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER SCORE ENTRY
+// ═══════════════════════════════════════════════════════
+function initEntryForm() {
+  const pSel = document.getElementById('entry-player');
+  pSel.innerHTML = PLAYERS.map(p=>`<option value="${p.id}">${p.first} ${p.last}</option>`).join('');
+  const rSel = document.getElementById('entry-round');
+  rSel.innerHTML = ROUNDS.map(r=>`<option value="${r.id}">Day ${r.id.replace('R','')} – ${r.courseName}</option>`).join('');
+  currentEntryPlayer = PLAYERS[0].id;
+  currentEntryRound = ROUNDS[0].id;
+  updateEntryForm();
+}
+
+function updateEntryForm() {
+  currentEntryPlayer = document.getElementById('entry-player').value;
+  currentEntryRound = document.getElementById('entry-round').value;
+  const round = ROUNDS.find(r=>r.id===currentEntryRound);
+  const player = PLAYERS.find(p=>p.id===currentEntryPlayer);
+
+  document.getElementById('entry-info').innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+      <span style="color:var(--gray);font-size:0.85rem;">📍 ${round.courseName}</span>
+      <span style="color:var(--gray);font-size:0.85rem;">📅 ${round.date}</span>
+      <span class="format-badge">${round.format}</span>
+      <span style="color:var(--gray);font-size:0.85rem;">Hcp: ${player.hcp}</span>
+    </div>
+  `;
+
+  renderEntryScorecard();
+  renderEntrySummary();
+  // load specials
+  const sKey = `${currentEntryPlayer}_${currentEntryRound}`;
+  entrySpecials = STATE.specials[sKey] ? {...STATE.specials[sKey]} : {};
+  updateSpecialBtns();
+}
+
+function renderEntryScorecard() {
+  const round = ROUNDS.find(r=>r.id===currentEntryRound);
+  const holes = HOLES[round.course];
+  if(!holes){
+    document.getElementById('entry-scorecard').innerHTML='<p style="color:var(--gray)">Course data not available</p>';
+    return;
+  }
+
+  let html = '';
+  [0,9].forEach((offset,half)=>{
+    html += `<div class="nine-label">${half===0?'Front Nine':'Back Nine'}</div>`;
+    html += '<div class="score-grid">';
+    for(let i=offset;i<offset+9;i++){
+      const h = holes[i];
+      html += `
+        <div class="hole-cell">
+          <div class="hole-label">${h.hole}</div>
+          <div class="hole-par">P${h.par}</div>
+          <input type="number" class="score-input" id="score_${h.hole}" min="1" max="15"
+            value="${getScore(currentEntryPlayer,currentEntryRound,h.hole)||''}"
+            oninput="onScoreInput(${h.hole},${h.par})"
+            onchange="onScoreInput(${h.hole},${h.par})"
+          >
+        </div>
+      `;
+    }
+    html += '</div>';
+    // Nine totals
+    const nineHoles = holes.slice(offset,offset+9);
+    let ninePar=0,nineGross=0,nineNet=0,nineComplete=true;
+    nineHoles.forEach(h=>{
+      ninePar += h.par;
+      const g = getScore(currentEntryPlayer,currentEntryRound,h.hole);
+      if(g){ nineGross+=g; nineNet+=netScore(g,currentEntryPlayer,round.course,h.si); }
+      else nineComplete=false;
+    });
+    if(nineComplete){
+      html+=`<div style="display:flex;gap:16px;font-size:0.8rem;color:var(--gray);margin-bottom:12px;padding:4px 0;">
+        <span>Par: ${ninePar}</span>
+        <span>Gross: <strong style="color:var(--cream)">${nineGross}</strong></span>
+        <span>Net: <strong style="color:var(--gold)">${nineNet}</strong></span>
+        <span style="color:${nineGross-ninePar>=0?'#e07070':'#7ecf7e'}">${nineGross-ninePar>=0?'+':''}${nineGross-ninePar}</span>
+      </div>`;
+    }
+  });
+  document.getElementById('entry-scorecard').innerHTML = html;
+}
+
+function onScoreInput(hole, par) {
+  const input = document.getElementById(`score_${hole}`);
+  const val = parseInt(input.value);
+  if(isNaN(val)||val<1){input.className='score-input';return;}
+  const diff = val - par;
+  input.className = 'score-input' + (val===1?' ace':diff<=-2?' eagle':diff===-1?' birdie':diff===1?' bogey':diff>=2?' double':'');
+  renderEntrySummary();
+}
+
+function renderEntrySummary() {
+  const round = ROUNDS.find(r=>r.id===currentEntryRound);
+  const holes = HOLES[round.course];
+  let gross=0, net=0, complete=true;
+  let par=0;
+  holes.forEach(h=>{
+    par+=h.par;
+    const g = getScore(currentEntryPlayer,currentEntryRound,h.hole);
+    // Also check live input
+    const inp = document.getElementById(`score_${h.hole}`);
+    const live = inp ? parseInt(inp.value) : NaN;
+    const score = isNaN(live)||live<1 ? g : live;
+    if(score){ gross+=score; net+=netScore(score,currentEntryPlayer,round.course,h.si); }
+    else complete=false;
+  });
+  const player = PLAYERS.find(p=>p.id===currentEntryPlayer);
+  document.getElementById('entry-summary').innerHTML = complete ? `
+    <div class="summary-chip"><div class="lbl">Par</div><div class="val">${par}</div></div>
+    <div class="summary-chip"><div class="lbl">Gross</div><div class="val">${gross}</div></div>
+    <div class="summary-chip"><div class="lbl">Net</div><div class="val" style="color:${net<=par?'#7ecf7e':'#e07070'}">${net}</div></div>
+    <div class="summary-chip"><div class="lbl">+/- Par</div><div class="val" style="color:${gross-par>=0?'#e07070':'#7ecf7e'}">${gross-par>=0?'+':''}${gross-par}</div></div>
+    <div class="summary-chip"><div class="lbl">Hcp</div><div class="val">${player.hcp}</div></div>
+  ` : `<div style="color:var(--gray);font-size:0.85rem;">Enter all 18 holes to see totals</div>`;
+}
+
+function toggleSpecial(type) {
+  entrySpecials[type] = !entrySpecials[type];
+  updateSpecialBtns();
+  if(type==='ace' && entrySpecials.ace) {
+    toast('🎯 ACE recorded! Check with Commissioner!');
+  }
+}
+function updateSpecialBtns() {
+  ['ace','barkie','ferret','sharkie'].forEach(t=>{
+    const btn = document.getElementById('btn-'+t);
+    if(btn) btn.className = 'special-btn' + (entrySpecials[t]?' active':'');
+  });
+}
+
+function saveScores() {
+  const round = ROUNDS.find(r=>r.id===currentEntryRound);
+  const holes = HOLES[round.course];
+  let saved=0;
+  holes.forEach(h=>{
+    const inp = document.getElementById(`score_${h.hole}`);
+    if(inp){
+      const val = parseInt(inp.value);
+      if(!isNaN(val)&&val>0){ setScore(currentEntryPlayer,currentEntryRound,h.hole,val); saved++; }
+    }
+  });
+  // Save specials
+  const sKey = `${currentEntryPlayer}_${currentEntryRound}`;
+  STATE.specials[sKey] = {...entrySpecials};
+  // Audit log
+  STATE.auditLog.push({
+    time: new Date().toISOString(),
+    action: 'Score Entry',
+    player: currentEntryPlayer,
+    round: currentEntryRound,
+    detail: `${saved} holes saved`
+  });
+  saveState();
+  toast(`✅ Saved ${saved} hole scores for ${playerName(currentEntryPlayer)}`);
+}
+
+function clearEntry() {
+  if(!confirm('Clear unsaved entries?')) return;
+  const round = ROUNDS.find(r=>r.id===currentEntryRound);
+  HOLES[round.course].forEach(h=>{
+    const inp = document.getElementById(`score_${h.hole}`);
+    if(inp) inp.value='';
+  });
+  entrySpecials = {};
+  updateSpecialBtns();
+  renderEntrySummary();
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER ROUNDS DETAIL
+// ═══════════════════════════════════════════════════════
+function renderRounds() {
+  const tabs = document.getElementById('round-tabs');
+  tabs.innerHTML = ROUNDS.map(r=>`
+    <button class="round-tab ${r.id==='R1'?'active':''}" onclick="showRoundDetail('${r.id}',this)">
+      Day ${r.id.replace('R','')} – ${r.courseName}
+    </button>
+  `).join('');
+  showRoundDetail('R1', tabs.querySelector('.round-tab'));
+}
+
+function showRoundDetail(roundId, btn) {
+  document.querySelectorAll('.round-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const round = ROUNDS.find(r=>r.id===roundId);
+  const holes = HOLES[round.course];
+  const isR2 = roundId === 'R2';
+
+  // Pre-compute Yellow Ball holder and Low Net winner per hole for R2
+  // Returns {holeNumber: {yellowHolder: playerId, lowNetPlayer: playerId}}
+  function getR2HoleInfo(groupPlayers) {
+    const info = {};
+    if(!isR2) return info;
+    const sorted = [...groupPlayers].sort((a,b)=>playerHcp(b)-playerHcp(a));
+    holes.forEach((h,i)=>{
+      const yellowHolder = sorted[i % sorted.length];
+      const others = groupPlayers.filter(p=>p!==yellowHolder);
+      let bestNet = Infinity, lowNetPlayer = null;
+      others.forEach(pid=>{
+        const g = getScore(pid,'R2',h.hole);
+        if(g){
+          const n = netScore(g,pid,'Course2',h.si);
+          if(n < bestNet){ bestNet=n; lowNetPlayer=pid; }
+        }
+      });
+      info[h.hole] = {yellowHolder, lowNetPlayer};
+    });
+    return info;
+  }
+
+  let html = `<div class="card">
+    <div class="card-title">${round.courseName} <span class="format-badge">${round.format}</span></div>`;
+
+  if(isR2) {
+    html += `<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:0.82rem;">
+      <span style="display:inline-flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:18px;height:18px;border-radius:3px;border:2px solid #c8a84b;background:rgba(200,168,75,0.15);"></span>
+        Yellow Ball holder (gross score counts)
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:18px;height:18px;border-radius:3px;background:rgba(126,207,126,0.25);border:2px solid #7ecf7e;"></span>
+        Low Net score (counts for team)
+      </span>
+    </div>`;
+  }
+
+  // Build per-group scorecards for R2, single card for others
+  const groupsList = isR2 ? GROUPS.R2 : [{id:'all', players: PLAYERS.map(p=>p.id)}];
+
+  groupsList.forEach(group => {
+    const groupPlayers = isR2 ? PLAYERS.filter(p=>group.players.includes(p.id)) : PLAYERS;
+    const r2info = isR2 ? getR2HoleInfo(group.players) : {};
+
+    if(isR2) {
+      html += `<div style="color:var(--gold);font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(200,168,75,0.2);">
+        Foursome ${group.id === 'G21' ? '1' : '2'} — ${group.players.map(id=>playerName(id)).join(', ')}
+      </div>`;
+    }
+
+    html += `<div style="overflow-x:auto;margin-bottom:20px;"><table class="standings-table">
+      <thead><tr>
+        <th>Player</th>
+        ${holes.filter(h=>h.hole<=9).map(h=>`<th>${h.hole}<br><small style="color:#a0b0c8">P${h.par}</small></th>`).join('')}
+        <th>Out</th>
+        ${holes.filter(h=>h.hole>9).map(h=>`<th>${h.hole}<br><small style="color:#a0b0c8">P${h.par}</small></th>`).join('')}
+        <th>In</th><th>Gross</th><th>Net</th>
+      </tr></thead>
+      <tbody>`;
+
+    groupPlayers.forEach(p=>{
+      let outGross=0,inGross=0,outNet=0,inNet=0;
+      let outComplete=true,inComplete=true;
+
+      const buildCell = (h, nine) => {
+        const g = getScore(p.id,roundId,h.hole);
+        if(g){ if(nine==='front'){outGross+=g;outNet+=netScore(g,p.id,round.course,h.si);}
+               else{inGross+=g;inNet+=netScore(g,p.id,round.course,h.si);} }
+        else { if(nine==='front') outComplete=false; else inComplete=false; }
+        const diff = g?g-h.par:null;
+        const scoreColor = g===1?'#f5a623':diff<=-2?'#f5a623':diff===-1?'#5bc8f5':diff>=2?'#c0392b':diff===1?'#e07070':'var(--cream)';
+
+        // R2 special styling
+        let cellStyle = `color:${scoreColor};font-weight:${g?'700':'400'};`;
+        let extraAttr = '';
+        if(isR2 && g && r2info[h.hole]) {
+          if(r2info[h.hole].yellowHolder === p.id) {
+            cellStyle += 'border:2px solid #c8a84b;background:rgba(200,168,75,0.15);border-radius:4px;';
+          } else if(r2info[h.hole].lowNetPlayer === p.id) {
+            cellStyle += 'border:2px solid #7ecf7e;background:rgba(126,207,126,0.15);border-radius:4px;';
+          }
+        }
+        return `<td style="${cellStyle}">${g||'—'}</td>`;
+      };
+
+      const frontCells = holes.filter(h=>h.hole<=9).map(h=>buildCell(h,'front')).join('');
+      const backCells  = holes.filter(h=>h.hole>9).map(h=>buildCell(h,'back')).join('');
+      const totalGross = outComplete&&inComplete?outGross+inGross:'—';
+      const totalNet   = outComplete&&inComplete?outNet+inNet:'—';
+
+      html += `<tr>
+        <td style="white-space:nowrap;font-weight:700">${p.first}<br><small style="color:var(--gray)">${p.last}</small></td>
+        ${frontCells}
+        <td style="font-weight:700;color:var(--gold)">${outComplete?outGross:'—'}</td>
+        ${backCells}
+        <td style="font-weight:700;color:var(--gold)">${inComplete?inGross:'—'}</td>
+        <td style="font-weight:700;color:var(--gold-light)">${totalGross}</td>
+        <td style="font-weight:700;color:#7ecf7e">${totalNet}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  });
+
+  html += `</div>`;
+  document.getElementById('round-detail-content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER PAIRINGS (FORMAT PAGE)
+// ═══════════════════════════════════════════════════════
+function renderPairings() {
+  let html = '';
+  ROUNDS.forEach(r=>{
+    html += `<div style="margin-bottom:20px;">
+      <div style="color:var(--gold);font-family:'Playfair Display',serif;margin-bottom:8px;">
+        Day ${r.id.replace('R','')} – ${r.courseName} <span class="format-badge">${r.format}</span>
+      </div>`;
+    if(r.id==='R1') {
+      GROUPS.R1.forEach(g=>{
+        const players = g.players.map(id=>`${playerName(id)} (Hcp ${playerHcp(id)})`).join(' &amp; ');
+        html += `<div style="padding:6px 0;border-bottom:1px solid rgba(200,168,75,0.1);font-size:0.9rem;">👥 ${players}</div>`;
+      });
+    } else if(r.id==='R2') {
+      GROUPS.R2.forEach(g=>{
+        const players = g.players.map(id=>`${playerName(id)} (Hcp ${playerHcp(id)})`).join(', ');
+        html += `<div style="padding:6px 0;border-bottom:1px solid rgba(200,168,75,0.1);font-size:0.9rem;">⛳ ${g.id}: ${players}</div>`;
+      });
+    } else if(r.id==='R3') {
+      html += `<div style="font-size:0.85rem;color:var(--gray);">Sixes format – teams rotate every 6 holes. See format rules for details.</div>`;
+      Object.entries(SIXES_PLAYER_GROUPS).forEach(([pid, groups])=>{
+        html+=`<div style="padding:4px 0;font-size:0.85rem;border-bottom:1px solid rgba(200,168,75,0.08);">
+          <strong style="color:var(--cream)">${playerName(pid)}</strong>: 
+          H1-6 vs ${SIXES_GROUPS[groups.holes_1_6]?.find(x=>x!==pid)?playerName(SIXES_GROUPS[groups.holes_1_6]?.find(x=>x!==pid)):'?'} · 
+          H7-12 vs ${SIXES_GROUPS[groups.holes_7_12]?.find(x=>x!==pid)?playerName(SIXES_GROUPS[groups.holes_7_12]?.find(x=>x!==pid)):'?'} · 
+          H13-18 vs ${SIXES_GROUPS[groups.holes_13_18]?.find(x=>x!==pid)?playerName(SIXES_GROUPS[groups.holes_13_18]?.find(x=>x!==pid)):'?'}
+        </div>`;
+      });
+    } else if(r.id==='R4') {
+      html += `<div style="font-size:0.9rem;padding:6px 0;">All 8 players · ${PLAYERS.sort((a,b)=>{
+        const {pts}=calcAllPoints();return (pts[b.id]||0)-(pts[a.id]||0);
+      }).map(p=>p.first+' '+p.last).join(', ')}</div>`;
+    }
+    html += '</div>';
+  });
+  document.getElementById('pairings-display').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════
+//  COMMISSIONER
+// ═══════════════════════════════════════════════════════
+function renderCommissioner() {
+  if(STATE.commUnlocked) {
+    showCommPanel();
+  } else {
+    document.getElementById('commissioner-locked').style.display='block';
+    document.getElementById('commissioner-panel').style.display='none';
+  }
+}
+
+function checkPin() {
+  const pin = document.getElementById('pin-input').value;
+  if(pin === COMMISSIONER_PIN) {
+    STATE.commUnlocked = true;
+    saveState();
+    showCommPanel();
+    toast('🔓 Commissioner mode unlocked');
+  } else {
+    toast('❌ Incorrect PIN', true);
+    document.getElementById('pin-input').value='';
+  }
+}
+function lockCommissioner() {
+  STATE.commUnlocked = false;
+  saveState();
+  document.getElementById('commissioner-locked').style.display='block';
+  document.getElementById('commissioner-panel').style.display='none';
+  document.getElementById('pin-input').value='';
+}
+function showCommPanel() {
+  document.getElementById('commissioner-locked').style.display='none';
+  document.getElementById('commissioner-panel').style.display='block';
+
+  const pSel = document.getElementById('comm-player');
+  const oPSel = document.getElementById('comm-override-player');
+  pSel.innerHTML = oPSel.innerHTML = PLAYERS.map(p=>`<option value="${p.id}">${p.first} ${p.last}</option>`).join('');
+  const rSel = document.getElementById('comm-round');
+  rSel.innerHTML = ROUNDS.map(r=>`<option value="${r.id}">Day ${r.id.replace('R','')} – ${r.courseName}</option>`).join('');
+  loadCommissionerView();
+}
+function loadCommissionerView() {
+  // Render audit log
+  const log = STATE.auditLog.slice().reverse();
+  document.getElementById('comm-audit-log').innerHTML = log.length ? log.map(entry=>`
+    <div class="audit-row">
+      <span style="color:var(--gray);font-size:0.75rem;">${new Date(entry.time).toLocaleString()}</span>
+      <span style="color:var(--gold)">${entry.action}</span>
+      <span>${playerName(entry.player)}</span>
+      <span style="color:var(--cream)">${entry.detail}</span>
+    </div>
+  `).join('') : '<div style="color:var(--gray);padding:12px;">No activity logged yet.</div>';
+}
+function applyOverride() {
+  const pid = document.getElementById('comm-override-player').value;
+  const delta = parseInt(document.getElementById('comm-override-pts').value);
+  const reason = document.getElementById('comm-override-reason').value;
+  if(isNaN(delta)||!reason){toast('Enter points and reason',true);return;}
+  if(!STATE.pointsOverride[pid]) STATE.pointsOverride[pid]=[];
+  STATE.pointsOverride[pid].push({delta, reason, time:new Date().toISOString()});
+  STATE.auditLog.push({time:new Date().toISOString(),action:'Override',player:pid,round:'—',detail:`${delta>=0?'+':''}${delta} pts – ${reason}`});
+  saveState();
+  document.getElementById('comm-override-pts').value='';
+  document.getElementById('comm-override-reason').value='';
+  loadCommissionerView();
+  toast(`✅ ${delta>=0?'+':''}${delta} pts applied to ${playerName(pid)}`);
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='pii2026_data.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+function resetAllScores() {
+  if(!confirm('⚠️ This will permanently delete ALL scores and data. Are you absolutely sure?')) return;
+  if(!confirm('This cannot be undone. Confirm reset?')) return;
+  STATE = initState();
+  STATE.commUnlocked = true;
+  stateRef.set(STATE).then(()=>{
+    toast('All scores reset.');
+    loadCommissionerView();
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+function init() {
+  startFirebaseListener(); // loads STATE from Firebase, then calls initEntryForm + renderHome
+}
+init();
+</script>
+</body>
+</html>
