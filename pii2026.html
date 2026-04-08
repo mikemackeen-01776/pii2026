@@ -843,7 +843,7 @@ function getHcp(playerId, courseId) {
 function netScore(gross, playerId, courseId, hole_si) {
   const hcp = getHcp(playerId, courseId);
   // strokes received on this hole
-  const strokes = hcp >= hole_si ? 1 : 0;
+ const strokes = Math.floor(hcp / 18) + (hcp % 18 >= hole_si ? 1 : 0);
   return gross - strokes;
 }
 
